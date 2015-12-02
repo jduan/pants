@@ -454,7 +454,16 @@ class BuildGraph(object):
     # "topological sort" standpoint.
     degrees = defaultdict(int)
     leaf_addresses = find_transitive_dependencies(addresses, degrees)
+    print("leaf_addresses")
+    for addr in leaf_addresses:
+      print(addr)
+    print("degrees so far")
+    for addr, degree in degrees.items():
+      print("%s -> %s" % (addr, degree))
     find_transitive_dependees(addresses, degrees)
+    print("final degrees")
+    for addr, degree in degrees.items():
+      print("%s -> %s" % (addr, degree))
     return top_sort(degrees, leaf_addresses)
 
   def resolve(self, spec):
