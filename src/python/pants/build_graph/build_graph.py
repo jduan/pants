@@ -442,9 +442,10 @@ class BuildGraph(object):
         sorted_list.append(addr)
         dependees = self._target_dependees_by_address[addr]
         for dependee in dependees:
-          degrees[dependee] -= 1
-          if degrees[dependee] == 0:
-            q.append(dependee)
+          if dependee in degrees:
+            degrees[dependee] -= 1
+            if degrees[dependee] == 0:
+              q.append(dependee)
 
       return sorted_list
 
