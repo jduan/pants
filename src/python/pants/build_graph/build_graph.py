@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division, generators, nested_scopes, pr
 
 import logging
 import traceback
-from collections import OrderedDict, defaultdict, deque
+from collections import defaultdict, deque, OrderedDict
 
 from twitter.common.collections import OrderedSet
 
@@ -404,6 +404,57 @@ class BuildGraph(object):
                                name=addressable.addressed_name,
                                address=address))
       raise
+
+  def topological_sort(self, addresses):
+    """Given a list of addresses, find all of their dependencides as well as
+    dependees. Return them in topological_sort order, ie leaf nodes first."""
+    def find_transitive_dependencies(addresses, degrees):
+      leaf_addresses = set()
+      def _walk_rec(addr):
+        if addr not in degrees:
+          dep_addresses = self._target_dependencies_by_address(addr)
+          degrees[addr] = len(dep_addresses)
+          if dep_addresses:
+            for dep_address in dep_addresses:
+              _walk_rec(dep_address)
+          else:
+            leaf_addresses.add(addr)
+      for address in addresses:
+        _walk_rec(address)
+
+      return leaf_addresses
+
+    def find_transitive_dependees(addresses, degrees):
+      def _walk_rec(addr):
+        dep_addresses = self._target_dependees_by_address(addr)
+        for dep_address in dep_addresses:
+          degrees[dep_address] += 1
+          if dep_address not in degrees:
+            _walk_rec(dep_address)
+      for address in addresses:
+        _walk_rec(address)
+
+    def top_sort(degrees, leaf_addresses):
+      sorted_list = []
+      q = deque(leaf_addresses)
+      while q:
+        addr = q.popleft()
+        sorted_list.append(addr)
+        dependees = self._target_dependees_by_address(addr)
+        for dependee in dependees:
+          degrees[dependee] -= 1
+          if degrees[dependee] == 0:
+            q.append(dependee)
+
+      return sorted_list
+
+    # degrees is a dict of all the dependencies and dependees of the given
+    # "addresses" with values being the number of "incoming edges" from a
+    # "topological sort" standpoint.
+    degrees = defaultdict(int)
+    leaf_addresses = find_transitive_dependencies(addresses, degrees)
+    find_transitive_dependees(addresses, degrees)
+    return top_sort(degrees, leaf_addresses)
 
   def resolve(self, spec):
     """Returns an iterator over the target(s) the given address points to."""
