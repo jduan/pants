@@ -412,7 +412,7 @@ class BuildGraph(object):
       leaf_addresses = set()
       def _walk_rec(addr):
         if addr not in degrees:
-          dep_addresses = self._target_dependencies_by_address(addr)
+          dep_addresses = self._target_dependencies_by_address[addr]
           degrees[addr] = len(dep_addresses)
           if dep_addresses:
             for dep_address in dep_addresses:
@@ -426,7 +426,7 @@ class BuildGraph(object):
 
     def find_transitive_dependees(addresses, degrees):
       def _walk_rec(addr):
-        dep_addresses = self._target_dependees_by_address(addr)
+        dep_addresses = self._target_dependees_by_address[addr]
         for dep_address in dep_addresses:
           degrees[dep_address] += 1
           if dep_address not in degrees:
@@ -440,7 +440,7 @@ class BuildGraph(object):
       while q:
         addr = q.popleft()
         sorted_list.append(addr)
-        dependees = self._target_dependees_by_address(addr)
+        dependees = self._target_dependees_by_address[addr]
         for dependee in dependees:
           degrees[dependee] -= 1
           if degrees[dependee] == 0:
