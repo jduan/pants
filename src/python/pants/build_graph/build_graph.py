@@ -408,7 +408,13 @@ class BuildGraph(object):
   def topological_sort(self, addresses):
     """Given a list of addresses, find all of their dependencides as well as
     dependees. Return them in topological_sort order, ie leaf nodes first."""
+
     def find_transitive_dependencies(addresses, degrees):
+      """Find transitive dependencies and calculate the 'degrees' of each address
+      along the way. The degrees dict is also used to tell if an address has
+      been visited or not.
+
+      Return the 'leaf' addresses."""
       leaf_addresses = set()
       def _walk_rec(addr):
         if addr not in degrees:
@@ -425,6 +431,8 @@ class BuildGraph(object):
       return leaf_addresses
 
     def find_transitive_dependees(addresses, degrees):
+      """Find transitive dependees and calculate the 'degrees' of each address
+      along the way."""
       visited = set()
       def _walk_rec(addr):
         if addr not in visited:
@@ -437,6 +445,8 @@ class BuildGraph(object):
         _walk_rec(address)
 
     def top_sort(degrees, leaf_addresses):
+      """Return a list of addresses based on topological order starting from the
+      leaf_addresses."""
       sorted_list = []
       q = deque(leaf_addresses)
       while q:
