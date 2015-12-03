@@ -425,11 +425,13 @@ class BuildGraph(object):
       return leaf_addresses
 
     def find_transitive_dependees(addresses, degrees):
+      visited = set()
       def _walk_rec(addr):
-        dep_addresses = self._target_dependees_by_address[addr]
-        for dep_address in dep_addresses:
-          degrees[dep_address] += 1
-          if dep_address not in degrees:
+        if addr not in visited:
+          visited.add(addr)
+          dep_addresses = self._target_dependees_by_address[addr]
+          for dep_address in dep_addresses:
+            degrees[dep_address] += 1
             _walk_rec(dep_address)
       for address in addresses:
         _walk_rec(address)
