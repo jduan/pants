@@ -476,6 +476,11 @@ class BuildGraph(object):
     print("final degrees")
     for addr, degree in degrees.items():
       print("%s -> %s" % (addr, degree))
+    # TODO: right now, this method returns the entire list in topological order
+    # right away. This needs to be integrated with the "remote execution engine" one
+    # way or another. The goal is to use the topological order here, execute
+    # tasks remotely, and generate more tasks based on the topological order.
+    # Repeat over and over until all the tasks are done.
     return top_sort(degrees, leaf_addresses)
 
   def resolve(self, spec):
